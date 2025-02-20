@@ -3,6 +3,8 @@ import {Share, ToastAndroid} from 'react-native'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Clipboard from '@react-native-clipboard/clipboard'
+import {pick, types, isErrorWithCode, errorCodes} from '@react-native-documents/picker'
+import {FileSystem} from 'react-native-file-access'
 
 
 const WAppView = styled.View`
@@ -14,13 +16,15 @@ const WAppView = styled.View`
 const WBtnRow = styled.View`
   padding: 10px;
   flex-direction: row;
+  flex-wrap: wrap-reverse;
   justify-content: space-between;`
 
 const WBtnBox = styled.TouchableOpacity`
   elevation: 8;
   flex-direction: row;
-  margin-horizontal: 5px;
   border-radius: 10px;
+  margin-horizontal: 5px;
+  margin-vertical: 5px;
   padding-vertical: 10px;
   padding-horizontal: 12px;
   background-color: #333;`
@@ -62,7 +66,7 @@ const App = () => {
       return notes.map(n => [
         n.title ? `-- ${n.title}` : null,
         n.value ].filter(d => d).join('\n')).join('\n\n')
-    } catch (err) { run_alert(`Ошибка JSON-данных:\n${err.message}`) } }
+    } catch (err) { run_alert(`Ошибка JSON-данных:\n${err.message || err}`) } }
 
   // const run_alert = msg => alert(msg)
   const run_alert = msg =>
@@ -73,7 +77,7 @@ const App = () => {
     try {
       const res = await Share.share({message: text})
       if (res.action === Share.dismissedAction) run_alert('Отправка отменена')
-    } catch (err) { run_alert(`Ошибка отправки:\n${err.message}`) } }
+    } catch (err) { run_alert(`Ошибка отправки:\n${err.message || err}`) } }
 
   const run_copy = () => {
     const text = json_get_text(); if (!text) return
@@ -84,11 +88,32 @@ const App = () => {
     run_alert( `Скопировано текстом\n[ ${n_lines}`+
       ` строк(и), ${n_words} слов, ${n_chars} букв ]` ) }
 
+  const run_file_load = async () => {
+    try {
+      const [res] = await pick({mode: 'open'})
+      if (!res.name) throw Error('Ничего не выбралось')
+      if (res.size && res.size > 1048576)
+        throw Error('Файл слишком большой (выбран по ошибке?)')
+      const data = await FileSystem.readFile(res.uri)
+      try { JSON.parse(data) } catch (err) {
+        throw Error('Неверное содержимое файла - не JSON') }
+      json_set(data)
+
+    } catch (err) {
+      if (!isErrorWithCode(err))
+        return run_alert(`Ошибка загрузки файла:\n${err.message || err}`)
+      switch (err.code) {
+        case errorCodes.IN_PROGRESS: return run_alert('Экран выбора файла уже гдето открыт')
+        case errorCodes.UNABLE_TO_OPEN_FILE_TYPE: return run_alert('Неподходящий тип файла')
+        case errorCodes.OPERATION_CANCELED: return run_alert('Выбор файла отменен')
+        default: return run_alert(`Ошибка выбора/загрузки файла:\n${err.message || err}`) } } }
+
   return (
     <WAppView>
     <WBtnRow>
-      <WBtn icon='share-social-outline' title='Отправить' cb={run_share} />
       <WBtn icon='copy-outline' title='Скопировать' cb={run_copy} />
+      <WBtn icon='share-social-outline' title='Отправить' cb={run_share} />
+      <WBtn icon='push-outline' title='Загрузить файл' cb={run_file_load} />
     </WBtnRow>
     <WInput
       multiline
