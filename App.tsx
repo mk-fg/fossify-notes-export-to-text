@@ -66,7 +66,7 @@ const App = () => {
       const data = await FileSystem.readFile(item.data)
       JSON.parse(data)
       json_set(data)
-    } catch (err) { run_alert(`Ошибка загрузки файла:\n${err.message || err}`) } }, [])
+    } catch (err) { run_alert(`Failed to load data:\n${err.message || err}`) } }, [])
   useEffect(() => ShareMenu.getInitialShare(handle_shared), [])
   useEffect(() => {
     const listener = ShareMenu.addNewShareListener(handle_shared)
@@ -75,12 +75,12 @@ const App = () => {
   const json_get_text = () => {
     try {
       let notes = JSON.parse(json)
-      if (!Array.isArray(notes)) throw Error('Не экспорт списка Заметок')
+      if (!Array.isArray(notes)) throw Error('Unrecognized export-data structure')
       // notes.sort((a, b) => (a.id+1 || 9999) - (b.id+1 || 9999))
       return notes.map(n => [
         n.title ? `-- ${n.title}` : null,
         n.value ].filter(d => d).join('\n')).join('\n\n')
-    } catch (err) { run_alert(`Ошибка JSON-данных:\n${err.message || err}`) } }
+    } catch (err) { run_alert(`Failed to parse JSON data:\n${err.message || err}`) } }
 
   // const run_alert = msg => alert(msg)
   const run_alert = msg =>
@@ -90,8 +90,8 @@ const App = () => {
     const text = json_get_text(); if (!text) return
     try {
       const res = await Share.share({message: text})
-      if (res.action === Share.dismissedAction) run_alert('Отправка отменена')
-    } catch (err) { run_alert(`Ошибка отправки:\n${err.message || err}`) } }
+      if (res.action === Share.dismissedAction) run_alert('Sharing cancelled')
+    } catch (err) { run_alert(`Sharing error:\n${err.message || err}`) } }
 
   const run_copy = () => {
     const text = json_get_text(); if (!text) return
@@ -99,40 +99,40 @@ const App = () => {
     const [n_chars, n_words, n_lines] =
       [text.length, text.trim().split(/\s+/).length, text.split('\n').length]
         .map(n => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','))
-    run_alert( `Скопировано текстом\n[ ${n_lines}`+
-      ` строк(и), ${n_words} слов, ${n_chars} букв ]` ) }
+    run_alert( `Copied as text\n[ ${n_lines}`+
+      ` line(s), ${n_words} words, ${n_chars} chars ]` ) }
 
   const run_file_load = async () => {
     try {
       const [res] = await pick({mode: 'open'})
-      if (!res.name) throw Error('Ничего не выбралось')
+      if (!res.name) throw Error('Nothing was picked')
       if (res.size && res.size > 1048576)
-        throw Error('Файл слишком большой (выбран по ошибке?)')
+        throw Error('File is too large (maybe a misclick?)')
       const data = await FileSystem.readFile(res.uri)
       try { JSON.parse(data) } catch (err) {
-        throw Error('Неверное содержимое файла - не JSON') }
+        throw Error('Unrecognized file contents (not JSON export)') }
       json_set(data)
 
     } catch (err) {
       if (!isErrorWithCode(err))
-        return run_alert(`Ошибка загрузки файла:\n${err.message || err}`)
+        return run_alert(`Failed to load file:\n${err.message || err}`)
       switch (err.code) {
-        case errorCodes.IN_PROGRESS: return run_alert('Экран выбора файла уже гдето открыт')
-        case errorCodes.UNABLE_TO_OPEN_FILE_TYPE: return run_alert('Неподходящий тип файла')
-        case errorCodes.OPERATION_CANCELED: return run_alert('Выбор файла отменен')
-        default: return run_alert(`Ошибка выбора/загрузки файла:\n${err.message || err}`) } } }
+        case errorCodes.IN_PROGRESS: return run_alert('File picker already open somewhere')
+        case errorCodes.UNABLE_TO_OPEN_FILE_TYPE: return run_alert('Invalid file type')
+        case errorCodes.OPERATION_CANCELED: return run_alert('File load cancelled')
+        default: return run_alert(`Failed to pick/load file:\n${err.message || err}`) } } }
 
   return (
     <WAppView>
     <WBtnRow>
-      <WBtn icon='copy-outline' title='Скопировать' cb={run_copy} />
-      <WBtn icon='share-social-outline' title='Отправить' cb={run_share} />
-      <WBtn icon='push-outline' title='Загрузить файл' cb={run_file_load} />
+      <WBtn icon='copy-outline' title='Copy' cb={run_copy} />
+      <WBtn icon='share-social-outline' title='Share' cb={run_share} />
+      <WBtn icon='push-outline' title='Load File' cb={run_file_load} />
     </WBtnRow>
     <WInput
       multiline
       // autoFocus
-      placeholder='Скопировать/вставить JSON сюда'
+      placeholder='Copy/paste JSON here'
       onChangeText={text => json_set(text)}
       value={json} />
     </WAppView> )
