@@ -1,11 +1,11 @@
-import {useState} from 'react'
+import {useState, useEffect, useCallback} from 'react'
 import {Share, ToastAndroid} from 'react-native'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Clipboard from '@react-native-clipboard/clipboard'
 import {pick, types, isErrorWithCode, errorCodes} from '@react-native-documents/picker'
 import {FileSystem} from 'react-native-file-access'
-import ReceiveSharingIntent from 'react-native-receive-sharing-intent'
+import ShareMenu, {ShareMenuReactView} from 'react-native-share-menu'
 
 
 const WAppView = styled.View`
@@ -59,6 +59,19 @@ const WBtn = ({icon, title, cb}) => (
 const App = () => {
   const [json, json_set] = useState('')
 
+	const [shared, shared_set] = useState(null);
+
+	// const shared_handle = useCallback(
+	// 	item => item && item.data && shared_set(item.data), [] )
+	const shared_handle = useCallback(item => {
+		json_set(`URI: ${item.data}`) }, [] )
+
+	useEffect(() => ShareMenu.getInitialShare(shared_handle), [])
+	useEffect(() => {
+		const listener = ShareMenu.addNewShareListener(shared_handle)
+		return () => listener.remove() }, [])
+
+
   const json_get_text = () => {
     try {
       let notes = JSON.parse(json)
@@ -108,11 +121,6 @@ const App = () => {
         case errorCodes.UNABLE_TO_OPEN_FILE_TYPE: return run_alert('Неподходящий тип файла')
         case errorCodes.OPERATION_CANCELED: return run_alert('Выбор файла отменен')
         default: return run_alert(`Ошибка выбора/загрузки файла:\n${err.message || err}`) } } }
-
-	// [{ filePath: null, text: null, weblink: null, mimeType: null, contentUri: null, fileName: null, extension: null }]
-	ReceiveSharingIntent.getReceivedFiles(files => {
-		json_set(`URI: ${files[0].contentUri}`)
-	}, err => json_set(`ERROR: ${err.message || err}`), 'FossifyNotesJSONExportShare')
 
   return (
     <WAppView>

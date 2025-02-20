@@ -19,7 +19,7 @@
 		"react-native-vector-icons": "10.2.x",
 		"react-native-asset": "2.1.x",
 		"react-native-file-access": "3.1.x",
-		"react-native-receive-sharing-intent": "2.0.x",
+		"react-native-share-menu": "6.0.x",
 		"@react-native-documents/picker": "10.1.x",
 		"@react-native-clipboard/clipboard": "1.16.x"
 	},
