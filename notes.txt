@@ -10,12 +10,12 @@ android-sdk.sh:
 	# From File->Other Settings->Default Project Structure/JDK in Studio
 	export JAVA_HOME=/opt/android-studio/jbr
 	export PS1=" #aenv$PS1"
-	cd ~/FossifyNotesApp
+	cd ~/FossifyNotesToText
 
 create app template:
 	# pacman -S npm
 	# source android-sdk.sh
-	npx @react-native-community/cli init FossifyNotesApp
+	npx @react-native-community/cli init FossifyNotesToText
 
 emulator in X11 from android-studio:
 	# source android-sdk.sh
@@ -33,6 +33,14 @@ run the app on emulated phone:
 	npm run android
 	# does "cd android && ./gradlew build" + uploads/reloads apk in "run start" server process
 	# see package.json for all these action commands
+
+build release apk:
+	# still 47M in size, vs 110M debug build, so kinda terrible anyway
+	# ./android/app/build/outputs/apk/debug/app-debug.apk
+	# source android-sdk.sh
+	cd android && ./gradlew assembleRelease
+	adb install app/build/outputs/apk/release/app-release.apk
+	cp _dst/android/app/build/outputs/apk/release/app-release.apk _tmp/
 
 
 
