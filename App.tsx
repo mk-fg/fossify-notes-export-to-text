@@ -1,5 +1,5 @@
 import {useState, useEffect, useCallback} from 'react'
-import {Share, ToastAndroid} from 'react-native'
+import {Share, ToastAndroid, Appearance} from 'react-native'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -43,6 +43,7 @@ const WBtnText = styled.Text`
 
 const WInput = styled.TextInput`
   flex: 1;
+  color: ${Appearance.getColorScheme() === 'dark' ? '#fff' : '#000'}
   selectTextOnFocus: true;
   textAlignVertical: top;
   padding: 5px;
@@ -130,7 +131,7 @@ const App = () => {
     </WBtnRow>
     <WInput
       multiline
-      // autoFocus={true}
+      // autoFocus
       placeholder='Скопировать/вставить JSON сюда'
       onChangeText={text => json_set(text)}
       value={json} />
