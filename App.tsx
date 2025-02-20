@@ -43,7 +43,7 @@ const WBtnText = styled.Text`
 
 const WInput = styled.TextInput`
   flex: 1;
-  color: ${Appearance.getColorScheme() === 'dark' ? '#fff' : '#000'}
+  color: ${Appearance.getColorScheme() === 'dark' ? '#fff' : '#000'};
   selectTextOnFocus: true;
   textAlignVertical: top;
   padding: 5px;
