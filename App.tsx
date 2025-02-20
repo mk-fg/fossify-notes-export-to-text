@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import Clipboard from '@react-native-clipboard/clipboard'
 import {pick, types, isErrorWithCode, errorCodes} from '@react-native-documents/picker'
 import {FileSystem} from 'react-native-file-access'
-import ShareMenu, {ShareMenuReactView} from 'react-native-share-menu'
+import ShareMenu from 'react-native-share-menu'
 
 
 const WAppView = styled.View`
@@ -59,18 +59,17 @@ const WBtn = ({icon, title, cb}) => (
 const App = () => {
   const [json, json_set] = useState('')
 
-	const [shared, shared_set] = useState(null);
-
-	// const shared_handle = useCallback(
-	// 	item => item && item.data && shared_set(item.data), [] )
-	const shared_handle = useCallback(item => {
-		json_set(`URI: ${item.data}`) }, [] )
-
-	useEffect(() => ShareMenu.getInitialShare(shared_handle), [])
-	useEffect(() => {
-		const listener = ShareMenu.addNewShareListener(shared_handle)
-		return () => listener.remove() }, [])
-
+  const handle_shared = useCallback(async item => {
+    if (!(item && item.data)) return
+    try {
+      const data = await FileSystem.readFile(item.data)
+      JSON.parse(data)
+      json_set(data)
+    } catch (err) { run_alert(`Ошибка загрузки файла:\n${err.message || err}`) } }, [])
+  useEffect(() => ShareMenu.getInitialShare(handle_shared), [])
+  useEffect(() => {
+    const listener = ShareMenu.addNewShareListener(handle_shared)
+    return () => listener.remove() }, [])
 
   const json_get_text = () => {
     try {
@@ -84,7 +83,7 @@ const App = () => {
 
   // const run_alert = msg => alert(msg)
   const run_alert = msg =>
-    ToastAndroid.showWithGravity(msg, ToastAndroid.SHORT, ToastAndroid.TOP)
+    ToastAndroid.showWithGravity(msg, ToastAndroid.LONG, ToastAndroid.TOP)
 
   const run_share = async () => {
     const text = json_get_text(); if (!text) return
