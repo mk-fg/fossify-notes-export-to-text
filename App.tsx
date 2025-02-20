@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import Clipboard from '@react-native-clipboard/clipboard'
 import {pick, types, isErrorWithCode, errorCodes} from '@react-native-documents/picker'
 import {FileSystem} from 'react-native-file-access'
+import ReceiveSharingIntent from 'react-native-receive-sharing-intent'
 
 
 const WAppView = styled.View`
@@ -108,6 +109,11 @@ const App = () => {
         case errorCodes.OPERATION_CANCELED: return run_alert('Выбор файла отменен')
         default: return run_alert(`Ошибка выбора/загрузки файла:\n${err.message || err}`) } } }
 
+	// [{ filePath: null, text: null, weblink: null, mimeType: null, contentUri: null, fileName: null, extension: null }]
+	ReceiveSharingIntent.getReceivedFiles(files => {
+		json_set(`URI: ${files[0].contentUri}`)
+	}, err => json_set(`ERROR: ${err.message || err}`), 'FossifyNotesJSONExportShare')
+
   return (
     <WAppView>
     <WBtnRow>
@@ -117,7 +123,7 @@ const App = () => {
     </WBtnRow>
     <WInput
       multiline
-      autoFocus={true}
+      // autoFocus={true}
       placeholder='Скопировать/вставить JSON сюда'
       onChangeText={text => json_set(text)}
       value={json} />
