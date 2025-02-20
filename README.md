@@ -3,6 +3,8 @@
 Simple [React Native] Android (10+) app to convert [Fossify Notes] full-export JSON data
 with all stored notes (available via Settings menu) to plaintext for share/copy buttons.
 
+There should be an APK under "Releases", and see below for how to build it yourself.
+
 JSON can be shared from some other app (e.g. File Manager),
 loaded via "Load File" button, or copy-pasted into main textbox,
 after which "Copy" and "Share" button will be able to export converted
@@ -90,7 +92,7 @@ Should be not too difficult on a typical Linux system or VM.
     ``` sh
     dst=../FossifyNotesToText
     cp App.tsx package.json react-native.config.js $dst/
-    cp AndroidManifest.xml $dst/android/app/src/debug/
+    cp AndroidManifest.debug.xml $dst/android/app/src/debug/AndroidManifest.xml
     cp AndroidManifest.main.xml $dst/android/app/src/main/AndroidManifest.xml
     ```
 

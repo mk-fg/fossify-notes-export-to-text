@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react'
+import {useState, useEffect} from 'react'
 import {Share, ToastAndroid, Appearance} from 'react-native'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/Ionicons'
@@ -60,17 +60,17 @@ const WBtn = ({icon, title, cb}) => (
 const App = () => {
   const [json, json_set] = useState('')
 
-  const handle_shared = useCallback(async item => {
+  const handle_shared = async item => {
     if (!(item && item.data)) return
     try {
       const data = await FileSystem.readFile(item.data)
       JSON.parse(data)
       json_set(data)
-    } catch (err) { run_alert(`Failed to load data:\n${err.message || err}`) } }, [])
-  useEffect(() => ShareMenu.getInitialShare(handle_shared), [])
+    } catch (err) { run_alert(`Failed to load data:\n${err.message || err}`) } }
+  useEffect(() => ShareMenu.getInitialShare(handle_shared))
   useEffect(() => {
     const listener = ShareMenu.addNewShareListener(handle_shared)
-    return () => listener.remove() }, [])
+    return () => listener.remove() })
 
   const json_get_text = () => {
     try {
@@ -82,7 +82,6 @@ const App = () => {
         n.value ].filter(d => d).join('\n')).join('\n\n')
     } catch (err) { run_alert(`Failed to parse JSON data:\n${err.message || err}`) } }
 
-  // const run_alert = msg => alert(msg)
   const run_alert = msg =>
     ToastAndroid.showWithGravity(msg, ToastAndroid.LONG, ToastAndroid.TOP)
 
